@@ -12,6 +12,8 @@ import {
   GraphID,
   LibraryAgent,
   LibraryAgentID,
+  LibraryAgentPreset,
+  LibraryAgentPresetID,
   Schedule,
   ScheduleID,
 } from "@/lib/autogpt-server-api";
@@ -23,6 +25,20 @@ import AgentRunDetailsView from "@/components/agents/agent-run-details-view";
 import AgentRunsSelectorList from "@/components/agents/agent-runs-selector-list";
 import AgentScheduleDetailsView from "@/components/agents/agent-schedule-details-view";
 
+export type AgentRunsViewSelection =
+  | {
+      type: "run";
+      id?: GraphExecutionID;
+    }
+  | {
+      type: "preset";
+      id: LibraryAgentPresetID;
+    }
+  | {
+      type: "schedule";
+      id: ScheduleID;
+    };
+
 export default function AgentRunsPage(): React.ReactElement {
   const { id: agentID }: { id: LibraryAgentID } = useParams();
   const router = useRouter();
@@ -33,11 +49,11 @@ export default function AgentRunsPage(): React.ReactElement {
   const [graph, setGraph] = useState<Graph | null>(null);
   const [agent, setAgent] = useState<LibraryAgent | null>(null);
   const [agentRuns, setAgentRuns] = useState<GraphExecutionMeta[]>([]);
+  const [agentPresets, setAgentPresets] = useState<LibraryAgentPreset[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [selectedView, selectView] = useState<
-    | { type: "run"; id?: GraphExecutionID }
-    | { type: "schedule"; id: ScheduleID }
-  >({ type: "run" });
+  const [selectedView, selectView] = useState<AgentRunsViewSelection>({
+    type: "run",
+  });
   const [selectedRun, setSelectedRun] = useState<
     GraphExecution | GraphExecutionMeta | null
   >(null);
@@ -56,6 +72,10 @@ export default function AgentRunsPage(): React.ReactElement {
 
   const selectRun = useCallback((id: GraphExecutionID) => {
     selectView({ type: "run", id });
+  }, []);
+
+  const selectPreset = useCallback((id: LibraryAgentPresetID) => {
+    selectView({ type: "preset", id });
   }, []);
 
   const selectSchedule = useCallback((schedule: Schedule) => {
@@ -151,6 +171,20 @@ export default function AgentRunsPage(): React.ReactElement {
     };
   }, [api, selectedView.id]);
 
+  const fetchPresets = useCallback(async () => {
+    if (!agent) return;
+    await api
+      .listLibraryAgentPresets({ graph_id: agent.graph_id })
+      .then(
+        (response) =>
+          setAgentPresets(response.presets) /* TODO: handle pagination */,
+      );
+  }, [api, agent]);
+
+  useEffect(() => {
+    fetchPresets();
+  }, [fetchPresets]);
+
   // load selectedRun based on selectedView
   useEffect(() => {
     if (selectedView.type != "run" || !selectedView.id || !agent) return;
@@ -221,6 +255,19 @@ export default function AgentRunsPage(): React.ReactElement {
     [api, agent],
   );
 
+  const createPresetFromRun = useCallback(
+    async (run: GraphExecutionMeta) => {
+      const createdPreset = await api.createLibraryAgentPreset({
+        /* FIXME: add dialog to enter name and description */
+        name: agent!.name,
+        description: agent!.description,
+        graph_execution_id: run.id,
+      });
+      setAgentPresets((prev) => [...prev, createdPreset]);
+    },
+    [agent, api],
+  );
+
   const agentActions: ButtonAction[] = useMemo(
     () => [
       ...(agent?.can_access_graph
@@ -254,14 +301,18 @@ export default function AgentRunsPage(): React.ReactElement {
         className="agpt-div w-full border-b lg:w-auto lg:border-b-0 lg:border-r"
         agent={agent}
         agentRuns={agentRuns}
+        agentPresets={agentPresets}
         schedules={schedules}
         selectedView={selectedView}
         allowDraftNewRun={!graph.has_webhook_trigger}
         onSelectRun={selectRun}
+        onSelectPreset={selectPreset}
         onSelectSchedule={selectSchedule}
         onSelectDraftNewRun={openRunDraftView}
+        onPinAsPreset={createPresetFromRun}
         onDeleteRun={setConfirmingDeleteAgentRun}
-        onDeleteSchedule={(id) => deleteSchedule(id)}
+        // TODO: onDeletePreset={deletePreset}
+        onDeleteSchedule={deleteSchedule}
       />
 
       <div className="flex-1">
@@ -290,6 +341,25 @@ export default function AgentRunsPage(): React.ReactElement {
           <AgentRunDraftView
             graph={graph}
             onRun={(runID) => selectRun(runID)}
+            onSavePreset={(preset) => {
+              setAgentPresets((prev) => [...prev, preset]);
+              selectPreset(preset.id);
+            }}
+            agentActions={agentActions}
+          />
+        ) : selectedView.type == "preset" ? (
+          <AgentRunDraftView
+            graph={graph}
+            preset={agentPresets.find((ap) => ap.id == selectedView.id)!}
+            onRun={(runID) => selectRun(runID)}
+            onSavePreset={(preset) =>
+              setAgentPresets((prev) =>
+                prev.with(
+                  agentPresets.findIndex((ap) => ap.id == preset.id),
+                  preset,
+                ),
+              )
+            }
             agentActions={agentActions}
           />
         ) : selectedView.type == "schedule" ? (

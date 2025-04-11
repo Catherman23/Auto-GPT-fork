@@ -252,7 +252,7 @@ export type GraphExecutionMeta = {
   user_id: UserID;
   graph_id: GraphID;
   graph_version: number;
-  preset_id?: string;
+  preset_id?: LibraryAgentPresetID;
   status: "QUEUED" | "RUNNING" | "COMPLETED" | "TERMINATED" | "FAILED";
   started_at: Date;
   ended_at: Date;
@@ -380,7 +380,8 @@ export enum AgentStatus {
   ERROR = "ERROR",
 }
 
-export interface LibraryAgentResponse {
+/* Mirror of backend/server/v2/library/model.py:LibraryAgentResponse */
+export type LibraryAgentResponse = {
   agents: LibraryAgent[];
   pagination: {
     current_page: number;
@@ -388,37 +389,54 @@ export interface LibraryAgentResponse {
     total_items: number;
     total_pages: number;
   };
-}
+};
 
-export interface LibraryAgentPreset {
-  id: string;
+/* Mirror of backend/server/v2/library/model.py:LibraryAgentPreset */
+export type LibraryAgentPreset = {
+  id: LibraryAgentPresetID;
   updated_at: Date;
   graph_id: GraphID;
   graph_version: number;
+  inputs: { [key: string]: any };
   name: string;
   description: string;
   is_active: boolean;
-  inputs: { [key: string]: any };
-}
+};
 
-export interface LibraryAgentPresetResponse {
+export type LibraryAgentPresetID = Brand<string, "LibraryAgentPresetID">;
+
+/* Mirror of backend/server/v2/library/model.py:LibraryAgentPresetResponse */
+export type LibraryAgentPresetResponse = {
   presets: LibraryAgentPreset[];
   pagination: {
     total: number;
     page: number;
     size: number;
   };
-}
+};
 
-export interface CreateLibraryAgentPresetRequest {
-  name: string;
-  description: string;
-  inputs: { [key: string]: any };
-  graph_id: GraphID;
-  graph_version: number;
-  is_active: boolean;
-}
+/* Mirror of backend/server/v2/library/model.py:LibraryAgentPresetCreatable */
+export type LibraryAgentPresetCreatable = Omit<
+  LibraryAgentPreset,
+  "id" | "updated_at" | "is_active"
+> & {
+  is_active?: boolean;
+};
 
+/* Mirror of backend/server/v2/library/model.py:LibraryAgentPresetCreatableFromGraphExecution */
+export type LibraryAgentPresetCreatableFromGraphExecution = Omit<
+  LibraryAgentPresetCreatable,
+  "graph_id" | "graph_version" | "inputs"
+> & {
+  graph_execution_id: GraphExecutionID;
+};
+
+/* Mirror of backend/server/v2/library/model.py:LibraryAgentPresetUpdatable */
+export type LibraryAgentPresetUpdatable = Partial<
+  Omit<LibraryAgentPresetCreatable, "graph_id" | "graph_version">
+>;
+
+/* Mirror of backend/server/v2/library/model.py:LibraryAgentSort */
 export enum LibraryAgentSortEnum {
   CREATED_AT = "createdAt",
   UPDATED_AT = "updatedAt",
