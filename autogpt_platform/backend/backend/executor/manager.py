@@ -31,6 +31,7 @@ from backend.data.notifications import (
 from backend.data.rabbitmq import SyncRabbitMQ
 from backend.executor.utils import create_execution_queue_config
 from backend.notifications.notifications import queue_notification
+from backend.server.v2.iffy.block_moderation import moderate_block_content
 from backend.util.exceptions import InsufficientBalanceError
 
 if TYPE_CHECKING:
@@ -834,6 +835,30 @@ class Executor:
                             for field_name, creds_meta in node_field_creds_map.items()
                         }
                     )
+
+                # Moderate the block before submitting to the executor pool
+                try:
+                    moderate_block_content(
+                        graph_id=queued_node_exec.graph_id,
+                        graph_exec_id=queued_node_exec.graph_exec_id,
+                        node_id=queued_node_exec.node_id,
+                        block_id=queued_node_exec.block_id,
+                        input_data=queued_node_exec.inputs,
+                        user_id=queued_node_exec.user_id,
+                    )
+                except Exception as e:
+                    logger.error(f"Moderation failed: {e}")
+                    node_exec_id = queued_node_exec.node_exec_id
+                    cls.db_client.upsert_execution_output(
+                        node_exec_id=node_exec_id,
+                        output_name="error",
+                        output_data=str(e),
+                    )
+                    exec_update = cls.db_client.update_node_execution_status(
+                        node_exec_id, ExecutionStatus.FAILED
+                    )
+                    send_execution_update(exec_update)
+                    continue  # Skip submitting this node
 
                 # Initiate node execution
                 running_executions[queued_node_exec.node_id].add_task(
