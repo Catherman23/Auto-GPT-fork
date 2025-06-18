@@ -28,6 +28,7 @@ import "@xyflow/react/dist/style.css";
 import { CustomNode } from "./CustomNode";
 import "./flow.css";
 import {
+  Block,
   BlockUIType,
   formatEdgeID,
   GraphExecutionID,
@@ -39,7 +40,6 @@ import { CustomEdge } from "./CustomEdge";
 import ConnectionLine from "./ConnectionLine";
 import { Control, ControlPanel } from "@/components/edit/control/ControlPanel";
 import { SaveControl } from "@/components/edit/control/SaveControl";
-import { BlocksControl } from "@/components/edit/control/BlocksControl";
 import { IconUndo2, IconRedo2 } from "@/components/ui/icons";
 import { startTutorial } from "./tutorial";
 import useAgentGraph from "@/hooks/useAgentGraph";
@@ -53,6 +53,7 @@ import OttoChatWidget from "@/components/OttoChatWidget";
 import { useToast } from "@/components/ui/use-toast";
 import { useCopyPaste } from "../hooks/useCopyPaste";
 import { CronScheduler } from "./cronScheduler";
+import { BlockMenu } from "./builder/block-menu/BlockMenu";
 
 // This is for the history, this is the minimum distance a block must move before it is logged
 // It helps to prevent spamming the history with small movements especially when pressing on a input in a block
@@ -101,7 +102,6 @@ const FlowEditor: React.FC<{
     setAgentDescription,
     savedAgent,
     availableNodes,
-    availableFlows,
     getOutputType,
     requestSave,
     requestSaveAndRun,
@@ -135,6 +135,10 @@ const FlowEditor: React.FC<{
   const [pinBlocksPopover, setPinBlocksPopover] = useState(false);
   // State to control if save popover should be pinned open
   const [pinSavePopover, setPinSavePopover] = useState(false);
+
+  const [blockMenuSelected, setBlockMenuSelected] = useState<
+    "save" | "block" | ""
+  >("");
 
   const runnerUIRef = useRef<RunnerUIWrapperRef>(null);
 
@@ -466,13 +470,7 @@ const FlowEditor: React.FC<{
   }, [nodes, setViewport, x, y]);
 
   const addNode = useCallback(
-    (blockId: string, nodeType: string, hardcodedValues: any = {}) => {
-      const nodeSchema = availableNodes.find((node) => node.id === blockId);
-      if (!nodeSchema) {
-        console.error(`Schema not found for block ID: ${blockId}`);
-        return;
-      }
-
+    (block: Block) => {
       /*
        Calculate a position to the right of the newly added block, allowing for some margin.
        If adding to the right side causes the new block to collide with an existing block, attempt to place it at the bottom or left.
@@ -489,7 +487,7 @@ const FlowEditor: React.FC<{
           ? // we will get all the dimension of nodes, then store
             findNewlyAddedBlockCoordinates(
               nodeDimensions,
-              nodeSchema.uiType == BlockUIType.NOTE ? 300 : 500,
+              block.uiType == BlockUIType.NOTE ? 300 : 500,
               60,
               1.0,
             )
@@ -504,19 +502,19 @@ const FlowEditor: React.FC<{
         type: "custom",
         position: viewportCoordinates, // Set the position to the calculated viewport center
         data: {
-          blockType: nodeType,
-          blockCosts: nodeSchema.costs,
-          title: `${nodeType} ${nodeId}`,
-          description: nodeSchema.description,
-          categories: nodeSchema.categories,
-          inputSchema: nodeSchema.inputSchema,
-          outputSchema: nodeSchema.outputSchema,
-          hardcodedValues: hardcodedValues,
+          blockType: block.name,
+          blockCosts: block.costs,
+          title: `${block.name} ${nodeId}`,
+          description: block.description,
+          categories: block.categories,
+          inputSchema: block.inputSchema,
+          outputSchema: block.outputSchema,
+          hardcodedValues: block.hardcodedValues || {},
           connections: [],
           isOutputOpen: false,
-          block_id: blockId,
-          isOutputStatic: nodeSchema.staticOutput,
-          uiType: nodeSchema.uiType,
+          block_id: block.id,
+          isOutputStatic: block.staticOutput,
+          uiType: block.uiType,
         },
       };
 
@@ -545,7 +543,6 @@ const FlowEditor: React.FC<{
     [
       nodeId,
       setViewport,
-      availableNodes,
       addNodes,
       nodeDimensions,
       deleteElements,
@@ -627,12 +624,12 @@ const FlowEditor: React.FC<{
   const editorControls: Control[] = [
     {
       label: "Undo",
-      icon: <IconUndo2 />,
+      icon: <IconUndo2 className="h-5 w-5" strokeWidth={2} />,
       onClick: handleUndo,
     },
     {
       label: "Redo",
-      icon: <IconRedo2 />,
+      icon: <IconRedo2 className="h-5 w-5" strokeWidth={2} />,
       onClick: handleRedo,
     },
   ];
@@ -680,15 +677,13 @@ const FlowEditor: React.FC<{
           <Controls />
           <Background className="dark:bg-slate-800" />
           <ControlPanel
-            className="absolute z-20"
             controls={editorControls}
             topChildren={
-              <BlocksControl
-                pinBlocksPopover={pinBlocksPopover} // Pass the state to BlocksControl
-                blocks={availableNodes}
-                addBlock={addNode}
-                flows={availableFlows}
-                nodes={nodes}
+              <BlockMenu
+                pinBlocksPopover={pinBlocksPopover}
+                addNode={addNode}
+                blockMenuSelected={blockMenuSelected}
+                setBlockMenuSelected={setBlockMenuSelected}
               />
             }
             botChildren={
@@ -701,6 +696,8 @@ const FlowEditor: React.FC<{
                 agentName={agentName}
                 onNameChange={setAgentName}
                 pinSavePopover={pinSavePopover}
+                blockMenuSelected={blockMenuSelected}
+                setBlockMenuSelected={setBlockMenuSelected}
               />
             }
           ></ControlPanel>
