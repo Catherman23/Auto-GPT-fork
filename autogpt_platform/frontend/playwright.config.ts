@@ -19,9 +19,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  /* Use more workers in CI for speed, but limit to avoid resource issues */
+  workers: process.env.CI ? 2 : undefined,
+  /* Reporter to use. See https://playwright.dev/docs/test-re porters */
   reporter: [["html"], ["line"]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -76,12 +76,13 @@ export default defineConfig({
 
   /* Run your local server before starting the tests */
   webServer: {
-    command: "pnpm start",
+    command: "next start -p 3000",
     url: "http://localhost:3000/",
-    reuseExistingServer: !process.env.CI,
-    timeout: 10 * 1000,
+    reuseExistingServer: !process.env.CI, // speeds up local runs
+    timeout: 60 * 1000, // increased timeout for production builds
     env: {
-      NODE_ENV: "test",
+      NODE_ENV: "production", // use production mode for stability
+      NEXT_PUBLIC_PW_TEST: "true",
     },
   },
 });
