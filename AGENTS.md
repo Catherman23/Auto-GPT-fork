@@ -19,7 +19,7 @@ See `docs/content/platform/getting-started.md` for setup instructions.
 ## Testing
 
 - Backend: `poetry run test` (runs pytest with a docker based postgres + prisma).
-- Frontend: `pnpm test` or `pnpm test-ui` for Playwright tests. See `docs/content/platform/contributing/tests.md` for tips.
+- Frontend: `pnpm test` or `pnpm test:ui` for Playwright tests. See `docs/content/platform/contributing/tests.md` for tips.
 
 Always run the relevant linters and tests before committing.
 Use conventional commit messages for all commits (e.g. `feat(backend): add API`).
