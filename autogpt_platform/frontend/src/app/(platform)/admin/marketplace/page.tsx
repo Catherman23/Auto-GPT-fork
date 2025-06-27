@@ -1,7 +1,7 @@
+import type { SubmissionStatus } from "@/lib/autogpt-server-api/types";
 import { withRoleAccess } from "@/lib/withRoleAccess";
 import { Suspense } from "react";
-import type { SubmissionStatus } from "@/lib/autogpt-server-api/types";
-import { AdminAgentsDataTable } from "@/components/admin/marketplace/admin-agents-data-table";
+import { AdminAgentsDataTable } from "./components/AdminAgentsDataTable/AdminAgentsDataTable";
 
 type MarketplaceAdminPageSearchParams = {
   page?: string;

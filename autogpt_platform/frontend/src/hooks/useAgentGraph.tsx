@@ -1,7 +1,7 @@
-import { CustomEdge } from "@/components/CustomEdge";
-import { CustomNode } from "@/components/CustomNode";
+import { CustomEdge } from "@/app/(platform)/build/components/CustomEdge/CustomEdge";
+import { CustomNode } from "@/app/(platform)/build/components/CustomNode/CustomNode";
+import { InputItem } from "@/app/(platform)/build/components/RunnerUIWrapper";
 import { useOnboarding } from "@/components/onboarding/onboarding-provider";
-import { InputItem } from "@/components/RunnerUIWrapper";
 import { useToast } from "@/components/ui/use-toast";
 import BackendAPI, {
   Block,
