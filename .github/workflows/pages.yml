@@ -8,6 +8,11 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    # REQUIRED: tell GitHub this is the Pages environment
+    environment:
+      name: github-pages
+
     permissions:
       contents: read
       pages: write
