@@ -112,7 +112,7 @@
     "axe-playwright": "2.1.0",
     "chromatic": "11.25.2",
     "concurrently": "9.2.0",
-    "eslint": "8.57.1",
+    "eslint": "9.30.0",
     "eslint-config-next": "15.3.4",
     "eslint-plugin-storybook": "9.0.13",
     "import-in-the-middle": "1.14.2",
