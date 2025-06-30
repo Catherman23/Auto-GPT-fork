@@ -53,7 +53,7 @@ def ask_gpt(prompt: str) -> str:
 def write_and_commit(filename: str, content: str):
     """Write content to a file, commit, and push to GitHub."""
     path = os.path.join(dir_path, filename)
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(content)
     subprocess.run(["git", "add", filename], cwd=dir_path)
     subprocess.run([
