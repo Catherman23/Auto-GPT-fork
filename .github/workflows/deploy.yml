@@ -1,57 +1,49 @@
-name: CI → Heroku
+# .github/workflows/deploy.yml
+name: CI → Deploy to Heroku
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out your code
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Set up Node.js
       - name: Use Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: "18.x"
+          node-version: '18'
 
-      # 3. Install your server deps
-      - name: Install server dependencies
-        run: npm ci
+      - name: Install root dependencies
+        run: npm install
 
-      # 4. Build your frontend
       - name: Build frontend
-        working-directory: ./frontend
+        working-directory: frontend
         run: |
-          npm ci
+          npm install
           npm run build
 
-      # 5. Copy build into the root 'software' folder
-      - name: Copy dist to /software
+      - name: Copy frontend build into software/
         run: |
-          rm -rf software
-          mkdir software
-          cp -r frontend/dist/* software/
+          mkdir -p software
+          cp -R frontend/dist/* software/
 
-      # 6. Commit those built assets (optional)
-      #    If you don’t want them in your git repo, skip these steps.
-      #    Heroku can serve them from your server.js anyway.
-      - name: Add built SPA to git
+      - name: Commit built SPA (if changed)
         run: |
           git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.email "github-actions@github.com"
           git add software
-          git commit -m "ci: add built SPA" || echo "nothing to commit"
+          git commit -m "chore: update built SPA" || echo "no changes to commit"
 
-      # 7. Deploy to Heroku
-      - name: Push to Heroku
+      - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: crate-nexus-wms
-          heroku_email: markallencatherman@gmail.com
+          heroku_email: markacatherman@gmail.com
 
