@@ -181,3 +181,4 @@ autogpt_platform/backend/settings.py
 # Auto generated client
 autogpt_platform/frontend/src/api/__generated__
 agent.log
+debug.txt
