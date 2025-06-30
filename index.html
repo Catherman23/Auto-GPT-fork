@@ -1,18 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Warehouse Management System MVP</title>
-</head>
-<body>
-  <h1>Warehouse Management System MVP</h1>
-  <nav>
-    <ul>
-      <li><a href="owner.html">Owner Dashboard</a></li>
-      <li><a href="product.html">Product Details</a></li>
-      <li><a href="orders.html">Order List</a></li>
-      <li><a href="insights.html">Data Insights</a></li>
-    </ul>
-  </nav>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Crate Nexus | Warehouse Management System MVP</title>
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 text-gray-800">
+    <!-- Navbar -->
+    <nav class="bg-white shadow">
+      <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <a href="home.html" class="text-2xl font-extrabold text-indigo-600">
+          Crate Nexus
+        </a>
+        <div class="space-x-4">
+          <a href="home.html" class="hover:text-indigo-500">Home</a>
+          <a href="owner.html" class="hover:text-indigo-500">Dashboard</a>
+          <a href="product.html" class="hover:text-indigo-500">Products</a>
+          <a href="orders.html" class="hover:text-indigo-500">Orders</a>
+          <a href="insights.html" class="hover:text-indigo-500">Insights</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-10">
+      <h1 class="text-4xl font-bold mb-6">
+        Welcome to Crate Nexus Warehouse Management
+      </h1>
+      <p class="mb-4">
+        This MVP includes:
+      </p>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Total products listed, grouped by category</li>
+        <li>Kitting project completion rate</li>
+        <li>Orders picked vs. packed vs. shipped counts</li>
+        <li>Income tracking alerts per box kitted</li>
+        <li>Replenishment alerts for low-stock SKUs</li>
+      </ul>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white shadow-inner mt-20">
+      <div class="container mx-auto px-4 py-4 text-center text-sm text-gray-600">
+        &copy; 2025 Crate Nexus. All rights reserved.
+      </div>
+    </footer>
+  </body>
 </html>
