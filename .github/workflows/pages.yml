@@ -8,6 +8,11 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v3
 
@@ -15,16 +20,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
 
-      # Step 2: Upload the entire repo (your HTML/JS) as the Pages artifact
+      # Step 2: Upload everything in your repo for Pages
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: |
+          path: .
 
-            .
-            !.github/**
-            !node_modules/**
-
-      # Step 3: Deploy to GitHub Pages
+      # Step 3: Deploy via the latest Pages deploy action
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
