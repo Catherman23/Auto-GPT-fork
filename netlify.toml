@@ -1,0 +1,11 @@
+# netlify.toml
+[build]
+  # We already built under "frontend/dist" and copied into /software,
+  # so no build command needed here.
+  command = ""
+  publish = "."    # serve from the repo root
+
+[[redirects]]
+  from = "/software/*"
+  to   = "/software/index.html"
+  status = 200
