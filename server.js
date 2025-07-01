@@ -1,9 +1,10 @@
+// server.js
 import express           from 'express';
 import basicAuth         from 'express-basic-auth';
 import path              from 'path';
 import { fileURLToPath } from 'url';
 
-// simulate __dirname in ESM
+// simulate __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
@@ -14,7 +15,6 @@ const PORT = process.env.PORT || 8080;
 app.use(
   '/software',
   basicAuth({
-    // we’ll do our own check so we can log it:
     authorizeAsync: true,
     authorizer: (username, password, cb) => {
       console.log(`🔑 Auth attempt: user="${username}" pass="${password}"`);
@@ -31,7 +31,7 @@ app.use(
 const staticPath = path.join(__dirname, 'frontend', 'dist');
 app.use('/software', express.static(staticPath));
 
-// ─── SPA fallback for any client‐side route under /software ─
+// ─── SPA fallback for any client-side route under /software ─
 app.get('/software/*', (req, res) => {
   res.sendFile(path.join(staticPath, 'index.html'));
 });
