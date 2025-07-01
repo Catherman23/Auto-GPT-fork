@@ -1,46 +1,39 @@
-// server.js
-import express           from 'express';
-import basicAuth         from 'express-basic-auth';
-import path              from 'path';
-import { fileURLToPath } from 'url';
+import express from 'express'
+import basicAuth from 'express-basic-auth'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-// simulate __dirname in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+// simulate __dirname
+const __filename = fileURLToPath(import.meta.url)
+const __dirname  = path.dirname(__filename)
 
-const app  = express();
-const PORT = process.env.PORT || 8080;
+const app  = express()
+const PORT = process.env.PORT || 8080
 
-// ─── Protect ONLY routes under /software ───────────────
+// Secure only /software
 app.use(
   '/software',
   basicAuth({
-    authorizeAsync: true,
-    authorizer: (username, password, cb) => {
-      console.log(`🔑 Auth attempt: user="${username}" pass="${password}"`);
-      const userOK = username === 'MCatherman';
-      const passOK = password === 'Mansfield23';
-      cb(null, userOK && passOK);
-    },
+    users:   { 'MCatherman': 'Mansfield23' },
     challenge: true,
-    realm: 'WMS',
+    realm: 'WMS'
   })
-);
+)
 
-// ─── Serve your built SPA at /software ─────────────────
-const staticPath = path.join(__dirname, 'frontend', 'dist');
-app.use('/software', express.static(staticPath));
+// Serve built files
+const distPath = path.join(__dirname, 'frontend', 'dist')
+app.use('/software', express.static(distPath))
 
-// ─── SPA fallback for any client‐side route under /software ─
+// SPA fallback
 app.get('/software/*', (req, res) => {
-  res.sendFile(path.join(staticPath, 'index.html'));
-});
+  res.sendFile(path.join(distPath, 'index.html'))
+})
 
-// ─── Root route for your splash/login stub ──────────────
+// Redirect root → /software/
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+  res.redirect('/software/')
+})
 
 app.listen(PORT, () => {
-  console.log(`🔒 Server running on port ${PORT}`);
-});
+  console.log(`🔒 Server listening on port ${PORT}`)
+})
