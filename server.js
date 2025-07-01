@@ -16,6 +16,12 @@ app.use(
   basicAuth({
     users:   { 'MCatherman': 'Mansfield23' },
     challenge: true,
+    authorizeAsync: true,
+    authorizer: (username, password, cb) => {
+      console.log(`Auth attempt: ${username} / ${password}`);
+      const ok = username === 'MCatherman' && password === 'Mansfield23';
+      cb(null, ok);
+    }
   })
 );
 
