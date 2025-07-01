@@ -1,31 +1,26 @@
-// server.js
-import express from 'express';
-import basicAuth from 'express-basic-auth';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// simulate __dirname in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+// server.cjs
+const express     = require('express');
+const basicAuth   = require('express-basic-auth');
+const path        = require('path');
 
 const app  = express();
 const PORT = process.env.PORT || 8080;
 
-// 1) Protect everything under '/' with a single user/pass:
+// protect everything under '/'
 app.use(basicAuth({
-  users:   { 'arka': 'YourSecretPassword123' },  // ← set your own login
+  users: { 'arka': 'YourSecretPassword123' },  // ← set your own user/password
   challenge: true,
 }));
 
-// 2) Serve your built frontend:
+// serve the built frontend
 const staticPath = path.join(__dirname, 'frontend', 'dist');
 app.use(express.static(staticPath));
 
-// 3) SPA fallback:
+// SPA fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(staticPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`🔒 Server running on http://localhost:${PORT}`);
+  console.log(`🔒 Server running on port ${PORT}`);
 });
