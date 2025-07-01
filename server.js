@@ -14,14 +14,16 @@ const PORT = process.env.PORT || 8080;
 app.use(
   '/software',
   basicAuth({
-    users: { 'MCatherman': 'Mansfield23' },
-    challenge: true,
+    // we’ll do our own check so we can log it:
     authorizeAsync: true,
     authorizer: (username, password, cb) => {
-      console.log(`🔑 Auth attempt: "${username}" / "${password}"`);
-      const ok = username === 'MCatherman' && password === 'Mansfield23';
-      cb(null, ok);
-    }
+      console.log(`🔑 Auth attempt: user="${username}" pass="${password}"`);
+      const userOK = username === 'MCatherman';
+      const passOK = password === 'Mansfield23';
+      cb(null, userOK && passOK);
+    },
+    challenge: true,
+    realm: 'WMS',
   })
 );
 
