@@ -1,7 +1,6 @@
 {
   "name": "wms-agent",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "start": "node server.js",
     "heroku-postbuild": "cd frontend && npm install && npm run build"
